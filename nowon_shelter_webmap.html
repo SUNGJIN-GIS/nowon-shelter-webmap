@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>노원구 재난 대피소 입지 적합성 지도</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; font-family: '맑은 고딕', sans-serif; }
+  #map { width: 100%; height: 100%; }
+  .legend {
+    background: white; padding: 10px 12px; border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4); font-size: 13px; line-height: 1.6;
+  }
+  .legend i {
+    display: inline-block; width: 12px; height: 12px; margin-right: 6px;
+    border-radius: 50%; border: 1px solid #333; vertical-align: -2px;
+  }
+
+  .filter-control {
+    background: white; padding: 10px 12px; border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4); font-size: 13px; width: 200px;
+  }
+  .filter-control input[type="range"] { width: 100%; margin-top: 6px; }
+  .filter-control .value { font-weight: bold; color: #cc4400; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+// =====================================================================
+// 적합도 후보지 151개 (suitability 필드만 추림, 좌표는 WGS84)
+// =====================================================================
+const geojsonData = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"suitability":0.3489,"cls":4},"geometry":{"type":"Point","coordinates":[127.04728840208857,37.637425777658954]}},{"type":"Feature","properties":{"suitability":0.3489,"cls":4},"geometry":{"type":"Point","coordinates":[127.04728840208857,37.637425777658954]}},{"type":"Feature","properties":{"suitability":0.3489,"cls":4},"geometry":{"type":"Point","coordinates":[127.04728840208857,37.637425777658954]}},{"type":"Feature","properties":{"suitability":0.3378,"cls":4},"geometry":{"type":"Point","coordinates":[127.04731574292761,37.632919188789494]}},{"type":"Feature","properties":{"suitability":0.2723,"cls":2},"geometry":{"type":"Point","coordinates":[127.05872894180035,37.619442319024145]}},{"type":"Feature","properties":{"suitability":0.3287,"cls":3},"geometry":{"type":"Point","coordinates":[127.06442084792059,37.61495675675613]}},{"type":"Feature","properties":{"suitability":0.2951,"cls":3},"geometry":{"type":"Point","coordinates":[127.0586756586918,37.628455527979625]}},{"type":"Feature","properties":{"suitability":0.3069,"cls":3},"geometry":{"type":"Point","coordinates":[127.05870230321375,37.623948925235275]}},{"type":"Feature","properties":{"suitability":0.3184,"cls":3},"geometry":{"type":"Point","coordinates":[127.05303635176864,37.62392759896695]}},{"type":"Feature","properties":{"suitability":0.2076,"cls":1},"geometry":{"type":"Point","coordinates":[127.06436826059425,37.62396997945112]}},{"type":"Feature","properties":{"suitability":0.2623,"cls":2},"geometry":{"type":"Point","coordinates":[127.06439455718632,37.61946336983673]}},{"type":"Feature","properties":{"suitability":0.3147,"cls":3},"geometry":{"type":"Point","coordinates":[127.05864900823302,37.63296212725705]}},{"type":"Feature","properties":{"suitability":0.3101,"cls":3},"geometry":{"type":"Point","coordinates":[127.06434195814299,37.62847658559912]}},{"type":"Feature","properties":{"suitability":0.2901,"cls":2},"geometry":{"type":"Point","coordinates":[127.0529823725731,37.63294079409305]}},{"type":"Feature","properties":{"suitability":0.2699,"cls":2},"geometry":{"type":"Point","coordinates":[127.05300936517737,37.62843419826366]}},{"type":"Feature","properties":{"suitability":0.3241,"cls":3},"geometry":{"type":"Point","coordinates":[127.04734307767598,37.62841259645212]}},{"type":"Feature","properties":{"suitability":0.3155,"cls":3},"geometry":{"type":"Point","coordinates":[127.05295537395439,37.637447386454944]}},{"type":"Feature","properties":{"suitability":0.4152,"cls":5},"geometry":{"type":"Point","coordinates":[127.08698227408087,37.633064710952915]}},{"type":"Feature","properties":{"suitability":0.4152,"cls":5},"geometry":{"type":"Point","coordinates":[127.08698227408087,37.633064710952915]}},{"type":"Feature","properties":{"suitability":0.3757,"cls":4},"geometry":{"type":"Point","coordinates":[127.0870072137914,37.62855809509506]}},{"type":"Feature","properties":{"suitability":0.2929,"cls":3},"geometry":{"type":"Point","coordinates":[127.08136616758611,37.62403150977501]}},{"type":"Feature","properties":{"suitability":0.4235,"cls":5},"geometry":{"type":"Point","coordinates":[127.08695732881331,37.637571323345654]}},{"type":"Feature","properties":{"suitability":0.3481,"cls":4},"geometry":{"type":"Point","coordinates":[127.08131560949231,37.63304473849981]}},{"type":"Feature","properties":{"suitability":0.3481,"cls":4},"geometry":{"type":"Point","coordinates":[127.08131560949231,37.63304473849981]}},{"type":"Feature","properties":{"suitability":0.2629,"cls":2},"geometry":{"type":"Point","coordinates":[127.08134089135517,37.62853812587009]}},{"type":"Feature","properties":{"suitability":0.2629,"cls":2},"geometry":{"type":"Point","coordinates":[127.08134089135517,37.62853812587009]}},{"type":"Feature","properties":{"suitability":0.3021,"cls":3},"geometry":{"type":"Point","coordinates":[127.07006017843013,37.619484148639934]}},{"type":"Feature","properties":{"suitability":0.3252,"cls":3},"geometry":{"type":"Point","coordinates":[127.0756745745509,37.6285178845452]}},{"type":"Feature","properties":{"suitability":0.1876,"cls":1},"geometry":{"type":"Point","coordinates":[127.09272272045989,37.61956454374177]}},{"type":"Feature","properties":{"suitability":0.3842,"cls":4},"geometry":{"type":"Point","coordinates":[127.098267092834,37.64211707339522]}},{"type":"Feature","properties":{"suitability":0.2498,"cls":2},"geometry":{"type":"Point","coordinates":[127.09267354178334,37.62857779221931]}},{"type":"Feature","properties":{"suitability":0.3005,"cls":3},"geometry":{"type":"Point","coordinates":[127.09269813386071,37.624071169712764]}},{"type":"Feature","properties":{"suitability":0.3669,"cls":4},"geometry":{"type":"Point","coordinates":[127.09262434118877,37.63759102683856]}},{"type":"Feature","properties":{"suitability":0.3217,"cls":3},"geometry":{"type":"Point","coordinates":[127.09264894422645,37.63308441126131]}},{"type":"Feature","properties":{"suitability":0.3014,"cls":3},"geometry":{"type":"Point","coordinates":[127.08703214794623,37.62405147577226]}},{"type":"Feature","properties":{"suitability":0.409,"cls":5},"geometry":{"type":"Point","coordinates":[127.09259973266902,37.64209763895094]}},{"type":"Feature","properties":{"suitability":0.3523,"cls":4},"geometry":{"type":"Point","coordinates":[127.10398230088379,37.63312299544069]}},{"type":"Feature","properties":{"suitability":0.3575,"cls":4},"geometry":{"type":"Point","coordinates":[127.10400621412948,37.62861637016239]}},{"type":"Feature","properties":{"suitability":0.3491,"cls":4},"geometry":{"type":"Point","coordinates":[127.10393445840612,37.642136235605186]}},{"type":"Feature","properties":{"suitability":0.2779,"cls":2},"geometry":{"type":"Point","coordinates":[127.10395838230973,37.637629617254994]}},{"type":"Feature","properties":{"suitability":0.3024,"cls":3},"geometry":{"type":"Point","coordinates":[127.09833987525477,37.62859721724203]}},{"type":"Feature","properties":{"suitability":0.1293,"cls":0},"geometry":{"type":"Point","coordinates":[127.09836412525343,37.6240905915957]}},{"type":"Feature","properties":{"suitability":0.1293,"cls":0},"geometry":{"type":"Point","coordinates":[127.09836412525343,37.6240905915957]}},{"type":"Feature","properties":{"suitability":0.3397,"cls":4},"geometry":{"type":"Point","coordinates":[127.09829135904634,37.637610458141936]}},{"type":"Feature","properties":{"suitability":0.3671,"cls":4},"geometry":{"type":"Point","coordinates":[127.09831561985284,37.63310383942416]}},{"type":"Feature","properties":{"suitability":0.3117,"cls":3},"geometry":{"type":"Point","coordinates":[127.0755976853794,37.642037702220314]}},{"type":"Feature","properties":{"suitability":0.2636,"cls":2},"geometry":{"type":"Point","coordinates":[127.07562332081362,37.63753109979457]}},{"type":"Feature","properties":{"suitability":0.2995,"cls":3},"geometry":{"type":"Point","coordinates":[127.06995632534193,37.63751057973808]}},{"type":"Feature","properties":{"suitability":0.3229,"cls":3},"geometry":{"type":"Point","coordinates":[127.06998229729122,37.63300397716281]}},{"type":"Feature","properties":{"suitability":0.2969,"cls":3},"geometry":{"type":"Point","coordinates":[127.10962541090271,37.63764850417692]}},{"type":"Feature","properties":{"suitability":0.1594,"cls":0},"geometry":{"type":"Point","coordinates":[127.10964898724305,37.63314187931008]}},{"type":"Feature","properties":{"suitability":0.2166,"cls":1},"geometry":{"type":"Point","coordinates":[127.10403012204816,37.62410974142028]}},{"type":"Feature","properties":{"suitability":0.2615,"cls":2},"geometry":{"type":"Point","coordinates":[127.10960182930906,37.64215512558002]}},{"type":"Feature","properties":{"suitability":0.319,"cls":3},"geometry":{"type":"Point","coordinates":[127.08123973009879,37.6465645555955]}},{"type":"Feature","properties":{"suitability":0.4043,"cls":5},"geometry":{"type":"Point","coordinates":[127.08685749214654,37.655597738262784]}},{"type":"Feature","properties":{"suitability":0.2852,"cls":2},"geometry":{"type":"Point","coordinates":[127.06431564983113,37.63298318828059]}},{"type":"Feature","properties":{"suitability":0.3235,"cls":3},"geometry":{"type":"Point","coordinates":[127.08121442569488,37.651071154362455]}},{"type":"Feature","properties":{"suitability":0.38,"cls":4},"geometry":{"type":"Point","coordinates":[127.08129032199616,37.63755134766405]}},{"type":"Feature","properties":{"suitability":0.2887,"cls":2},"geometry":{"type":"Point","coordinates":[127.06428933565732,37.63748978749539]}},{"type":"Feature","properties":{"suitability":0.2105,"cls":1},"geometry":{"type":"Point","coordinates":[127.07564895053702,37.63302449390282]}},{"type":"Feature","properties":{"suitability":0.3407,"cls":4},"geometry":{"type":"Point","coordinates":[127.08126502886545,37.64205795336267]}},{"type":"Feature","properties":{"suitability":0.3023,"cls":3},"geometry":{"type":"Point","coordinates":[127.07554639737303,37.65105089667317]}},{"type":"Feature","properties":{"suitability":0.2712,"cls":2},"geometry":{"type":"Point","coordinates":[127.075572044233,37.646544301179894]}},{"type":"Feature","properties":{"suitability":0.3574,"cls":4},"geometry":{"type":"Point","coordinates":[127.09257511866588,37.646604247598326]}},{"type":"Feature","properties":{"suitability":0.2968,"cls":3},"geometry":{"type":"Point","coordinates":[127.06987837476606,37.65103036666486]}},{"type":"Feature","properties":{"suitability":0.3728,"cls":4},"geometry":{"type":"Point","coordinates":[127.08693237798741,37.64207793227315]}},{"type":"Feature","properties":{"suitability":0.3974,"cls":4},"geometry":{"type":"Point","coordinates":[127.09255049917805,37.651110852780576]}},{"type":"Feature","properties":{"suitability":0.2851,"cls":2},"geometry":{"type":"Point","coordinates":[127.08688245965533,37.65109113973187]}},{"type":"Feature","properties":{"suitability":0.3294,"cls":3},"geometry":{"type":"Point","coordinates":[127.08690742160185,37.64658453773527]}},{"type":"Feature","properties":{"suitability":0.3109,"cls":3},"geometry":{"type":"Point","coordinates":[127.0526850566616,37.68251311933081]}},{"type":"Feature","properties":{"suitability":0.3046,"cls":3},"geometry":{"type":"Point","coordinates":[127.05271211550269,37.67800656165163]}},{"type":"Feature","properties":{"suitability":0.3596,"cls":4},"geometry":{"type":"Point","coordinates":[127.08683251907414,37.66010433332789]}},{"type":"Feature","properties":{"suitability":0.3023,"cls":3},"geometry":{"type":"Point","coordinates":[127.05265799179044,37.68701967354093]}},{"type":"Feature","properties":{"suitability":0.2605,"cls":2},"geometry":{"type":"Point","coordinates":[127.08116379997001,37.66008434149801]}},{"type":"Feature","properties":{"suitability":0.3405,"cls":4},"geometry":{"type":"Point","coordinates":[127.0811891156524,37.65557774966333]}},{"type":"Feature","properties":{"suitability":0.3198,"cls":3},"geometry":{"type":"Point","coordinates":[127.07549508650712,37.660064077260245]}},{"type":"Feature","properties":{"suitability":0.2744,"cls":2},"geometry":{"type":"Point","coordinates":[127.0755207447982,37.655557488700005]}},{"type":"Feature","properties":{"suitability":0.3701,"cls":4},"geometry":{"type":"Point","coordinates":[127.06399949246004,37.6870621500172]}},{"type":"Feature","properties":{"suitability":0.3533,"cls":4},"geometry":{"type":"Point","coordinates":[127.06402587120682,37.68255558894519]}},{"type":"Feature","properties":{"suitability":0.353,"cls":4},"geometry":{"type":"Point","coordinates":[127.05840888671725,37.673521364718326]}},{"type":"Feature","properties":{"suitability":0.2978,"cls":3},"geometry":{"type":"Point","coordinates":[127.06397310783464,37.691568707620824]}},{"type":"Feature","properties":{"suitability":0.3351,"cls":4},"geometry":{"type":"Point","coordinates":[127.0583554609574,37.68253449045031]}},{"type":"Feature","properties":{"suitability":0.3185,"cls":3},"geometry":{"type":"Point","coordinates":[127.05838217681344,37.678027929318574]}},{"type":"Feature","properties":{"suitability":0.2994,"cls":3},"geometry":{"type":"Point","coordinates":[127.05273916831513,37.67350000050353]}},{"type":"Feature","properties":{"suitability":0.3197,"cls":3},"geometry":{"type":"Point","coordinates":[127.05832873914771,37.6870410481134]}},{"type":"Feature","properties":{"suitability":0.3432,"cls":4},"geometry":{"type":"Point","coordinates":[127.07531531830139,37.69161010010544]}},{"type":"Feature","properties":{"suitability":0.4496,"cls":5},"geometry":{"type":"Point","coordinates":[127.07534101664397,37.68710353581532]}},{"type":"Feature","properties":{"suitability":0.4341,"cls":5},"geometry":{"type":"Point","coordinates":[127.06969628733346,37.68257641481459]}},{"type":"Feature","properties":{"suitability":0.3401,"cls":4},"geometry":{"type":"Point","coordinates":[127.0697223172152,37.678069846909864]}},{"type":"Feature","properties":{"suitability":0.325,"cls":3},"geometry":{"type":"Point","coordinates":[127.06964421016627,37.69158954022037]}},{"type":"Feature","properties":{"suitability":0.4693,"cls":5},"geometry":{"type":"Point","coordinates":[127.06967025165093,37.687082979251464]}},{"type":"Feature","properties":{"suitability":0.3367,"cls":4},"geometry":{"type":"Point","coordinates":[127.06405224407641,37.67804902440494]}},{"type":"Feature","properties":{"suitability":0.3024,"cls":3},"geometry":{"type":"Point","coordinates":[127.06407861107017,37.673542456396596]}},{"type":"Feature","properties":{"suitability":0.3069,"cls":3},"geometry":{"type":"Point","coordinates":[127.0698263787618,37.66004354061542]}},{"type":"Feature","properties":{"suitability":0.208,"cls":1},"geometry":{"type":"Point","coordinates":[127.05276621510036,37.66899343588666]}},{"type":"Feature","properties":{"suitability":0.3279,"cls":3},"geometry":{"type":"Point","coordinates":[127.06977435958184,37.66905670069746]}},{"type":"Feature","properties":{"suitability":0.3279,"cls":3},"geometry":{"type":"Point","coordinates":[127.06977435958184,37.66905670069746]}},{"type":"Feature","properties":{"suitability":0.3206,"cls":3},"geometry":{"type":"Point","coordinates":[127.06980037206948,37.664550122390075]}},{"type":"Feature","properties":{"suitability":0.3023,"cls":3},"geometry":{"type":"Point","coordinates":[127.06418402031483,37.65551614968508]}},{"type":"Feature","properties":{"suitability":0.3193,"cls":3},"geometry":{"type":"Point","coordinates":[127.06985237966023,37.655536955373634]}},{"type":"Feature","properties":{"suitability":0.4839,"cls":5},"geometry":{"type":"Point","coordinates":[127.07536670926088,37.68259696805762]}},{"type":"Feature","properties":{"suitability":0.4271,"cls":5},"geometry":{"type":"Point","coordinates":[127.08098643216361,37.69163038727521]}},{"type":"Feature","properties":{"suitability":0.2891,"cls":2},"geometry":{"type":"Point","coordinates":[127.05848898072936,37.660001650108015]}},{"type":"Feature","properties":{"suitability":0.3079,"cls":3},"geometry":{"type":"Point","coordinates":[127.05851566683829,37.65549507163519]}},{"type":"Feature","properties":{"suitability":0.3392,"cls":4},"geometry":{"type":"Point","coordinates":[127.05282029059485,37.65998029624718]}},{"type":"Feature","properties":{"suitability":0.3392,"cls":4},"geometry":{"type":"Point","coordinates":[127.05282029059485,37.65998029624718]}},{"type":"Feature","properties":{"suitability":0.301,"cls":3},"geometry":{"type":"Point","coordinates":[127.0584622886738,37.66450822511292]}},{"type":"Feature","properties":{"suitability":0.283,"cls":2},"geometry":{"type":"Point","coordinates":[127.06410497218951,37.66903588492029]}},{"type":"Feature","properties":{"suitability":0.2897,"cls":2},"geometry":{"type":"Point","coordinates":[127.06413132743582,37.664529309976174]}},{"type":"Feature","properties":{"suitability":0.3342,"cls":4},"geometry":{"type":"Point","coordinates":[127.05279325585981,37.66448686780115]}},{"type":"Feature","properties":{"suitability":0.2342,"cls":1},"geometry":{"type":"Point","coordinates":[127.05843559067023,37.66901479664973]}},{"type":"Feature","properties":{"suitability":0.4627,"cls":5},"geometry":{"type":"Point","coordinates":[127.08101178736274,37.68712381970792]}},{"type":"Feature","properties":{"suitability":0.3113,"cls":3},"geometry":{"type":"Point","coordinates":[127.08103713691261,37.68261724867344]}},{"type":"Feature","properties":{"suitability":0.251,"cls":2},"geometry":{"type":"Point","coordinates":[127.07544375277084,37.66907724398039]}},{"type":"Feature","properties":{"suitability":0.3229,"cls":3},"geometry":{"type":"Point","coordinates":[127.07546942249846,37.66457066235375]}},{"type":"Feature","properties":{"suitability":0.342,"cls":4},"geometry":{"type":"Point","coordinates":[127.0753923961534,37.67809039683247]}},{"type":"Feature","properties":{"suitability":0.3596,"cls":4},"geometry":{"type":"Point","coordinates":[127.07541807732294,37.67358382214001]}},{"type":"Feature","properties":{"suitability":0.3077,"cls":3},"geometry":{"type":"Point","coordinates":[127.06415767681044,37.66002273156438]}},{"type":"Feature","properties":{"suitability":0.3688,"cls":4},"geometry":{"type":"Point","coordinates":[127.06974834129754,37.67356327553744]}},{"type":"Feature","properties":{"suitability":0.351,"cls":4},"geometry":{"type":"Point","coordinates":[127.08673257112237,37.678130678927296]}},{"type":"Feature","properties":{"suitability":0.3141,"cls":3},"geometry":{"type":"Point","coordinates":[127.08675756646227,37.673624097726886]}},{"type":"Feature","properties":{"suitability":0.3085,"cls":3},"geometry":{"type":"Point","coordinates":[127.08668256373075,37.68714383092842]}},{"type":"Feature","properties":{"suitability":0.4308,"cls":5},"geometry":{"type":"Point","coordinates":[127.0867075702123,37.6826372566612]}},{"type":"Feature","properties":{"suitability":0.3126,"cls":3},"geometry":{"type":"Point","coordinates":[127.08111315168013,37.66909751476821]}},{"type":"Feature","properties":{"suitability":0.3276,"cls":3},"geometry":{"type":"Point","coordinates":[127.08113847864637,37.66459092986635]}},{"type":"Feature","properties":{"suitability":0.3409,"cls":4},"geometry":{"type":"Point","coordinates":[127.0810624808146,37.67811067417188]}},{"type":"Feature","properties":{"suitability":0.3119,"cls":3},"geometry":{"type":"Point","coordinates":[127.08108781906998,37.673604096203434]}},{"type":"Feature","properties":{"suitability":0.2115,"cls":1},"geometry":{"type":"Point","coordinates":[127.09247660779354,37.66463064753495]}},{"type":"Feature","properties":{"suitability":0.3413,"cls":4},"geometry":{"type":"Point","coordinates":[127.05854234700205,37.65098848969457]}},{"type":"Feature","properties":{"suitability":0.3823,"cls":4},"geometry":{"type":"Point","coordinates":[127.0924273194234,37.67364382670953]}},{"type":"Feature","properties":{"suitability":0.1289,"cls":0},"geometry":{"type":"Point","coordinates":[127.09245196635406,37.66913723885517]}},{"type":"Feature","properties":{"suitability":0.5268,"cls":5},"geometry":{"type":"Point","coordinates":[127.09235334567154,37.68716356947598]}},{"type":"Feature","properties":{"suitability":0.4612,"cls":5},"geometry":{"type":"Point","coordinates":[127.09237800908346,37.68265699202007]}},{"type":"Feature","properties":{"suitability":0.2903,"cls":2},"geometry":{"type":"Point","coordinates":[127.08678255623332,37.66911751306009]}},{"type":"Feature","properties":{"suitability":0.2765,"cls":2},"geometry":{"type":"Point","coordinates":[127.08680754043682,37.664610924927025]}},{"type":"Feature","properties":{"suitability":0.2829,"cls":2},"geometry":{"type":"Point","coordinates":[127.06990436408073,37.646523774489246]}},{"type":"Feature","properties":{"suitability":0.3115,"cls":3},"geometry":{"type":"Point","coordinates":[127.06993034760555,37.64201717884694]}},{"type":"Feature","properties":{"suitability":0.2915,"cls":3},"geometry":{"type":"Point","coordinates":[127.06423668971831,37.64650297552442]}},{"type":"Feature","properties":{"suitability":0.255,"cls":2},"geometry":{"type":"Point","coordinates":[127.06426301562018,37.641996383243374]}},{"type":"Feature","properties":{"suitability":0.2989,"cls":3},"geometry":{"type":"Point","coordinates":[127.05862235183606,37.6374687230674]}},{"type":"Feature","properties":{"suitability":0.2989,"cls":3},"geometry":{"type":"Point","coordinates":[127.05862235183606,37.6374687230674]}},{"type":"Feature","properties":{"suitability":0.2989,"cls":3},"geometry":{"type":"Point","coordinates":[127.05862235183606,37.6374687230674]}},{"type":"Feature","properties":{"suitability":0.2989,"cls":3},"geometry":{"type":"Point","coordinates":[127.05862235183606,37.6374687230674]}},{"type":"Feature","properties":{"suitability":0.2584,"cls":2},"geometry":{"type":"Point","coordinates":[127.0642103579503,37.651009564338366]}},{"type":"Feature","properties":{"suitability":0.2606,"cls":2},"geometry":{"type":"Point","coordinates":[127.05856902122198,37.64648190428629]}},{"type":"Feature","properties":{"suitability":0.2616,"cls":2},"geometry":{"type":"Point","coordinates":[127.05859568949953,37.64197531541052]}},{"type":"Feature","properties":{"suitability":0.3256,"cls":3},"geometry":{"type":"Point","coordinates":[127.08139143818646,37.61952489021474]}},{"type":"Feature","properties":{"suitability":0.3149,"cls":3},"geometry":{"type":"Point","coordinates":[127.07570019285663,37.624011271721834]}},{"type":"Feature","properties":{"suitability":0.3058,"cls":3},"geometry":{"type":"Point","coordinates":[127.07572580545558,37.61950465543289]}},{"type":"Feature","properties":{"suitability":0.297,"cls":3},"geometry":{"type":"Point","coordinates":[127.07000826345475,37.628497371121256]}},{"type":"Feature","properties":{"suitability":0.3223,"cls":3},"geometry":{"type":"Point","coordinates":[127.07003422383394,37.62399076161359]}}]};
+
+// 적합도 값의 범위 (색상·슬라이더 기준)
+const V_MIN = 0.1289;
+const V_MAX = 0.5268;
+
+// ---------- 1. 지도 초기화 ----------
+const map = L.map('map');
+
+// ---------- 2. 배경지도: Esri World Street Map ----------
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
+  minZoom: 0,
+  maxZoom: 18,
+  maxNativeZoom: 18
+}).addTo(map);
+
+// ---------- 3. 단계구분 색상 (QGIS 심볼: 6단계, 낮음 → 높음) ----------
+const CLASS_COLORS = ['#f7fbff', '#d1e2f3', '#9ac8e0', '#529dcc', '#1d6cb1', '#08306b'];
+const CLASS_LABELS = ['0.1289 - 0.1594', '0.1594 - 0.2342', '0.2342 - 0.2903', '0.2903 - 0.3294', '0.3294 - 0.3974', '0.3974 - 0.5268'];
+
+// ---------- 4. GeoJSON 레이어 ----------
+const allMarkers = [];  // 필터 슬라이더에서 마커를 다시 찾기 위한 저장소
+
+const suitabilityLayer = L.geoJSON(geojsonData, {
+  pointToLayer: function (feature, latlng) {
+    const val = feature.properties.suitability;
+    const marker = L.circleMarker(latlng, {
+      radius: 8,
+      fillColor: CLASS_COLORS[feature.properties.cls],
+      color: '#333',
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.85
+    });
+    allMarkers.push({ marker: marker, value: val });
+    return marker;
+  },
+  onEachFeature: function (feature, layer) {
+    const val = feature.properties.suitability;
+    layer.bindPopup(`<b>적합도(suitability)</b>: ${val.toFixed(3)}`);
+  }
+}).addTo(map);
+
+// 데이터 범위에 맞춰 지도 시점을 자동으로 맞춤
+map.fitBounds(suitabilityLayer.getBounds(), { padding: [20, 20] });
+
+// ---------- 5. 범례 ----------
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = function () {
+  const div = L.DomUtil.create('div', 'legend');
+  div.innerHTML =
+    '<b>입지 적합도</b>' +
+    CLASS_COLORS.map((c, i) =>
+      `<div><i style="background:${c}"></i>${CLASS_LABELS[i]}</div>`).join('');
+  return div;
+};
+legend.addTo(map);
+
+// ---------- 6. 필터 슬라이더 ----------
+const SLIDER_MIN = Math.floor(V_MIN * 20) / 20;   // 0.05 단위로 내림
+const SLIDER_MAX = Math.ceil(V_MAX * 20) / 20;    // 0.05 단위로 올림
+const filterControl = L.control({ position: 'topright' });
+filterControl.onAdd = function () {
+  const div = L.DomUtil.create('div', 'filter-control');
+  div.innerHTML =
+    '<b>적합도 필터</b><br>' +
+    `기준값 이상만 강조: <span class="value" id="filterValue">${SLIDER_MIN.toFixed(2)}</span><br>` +
+    `<input type="range" id="filterSlider" min="${SLIDER_MIN}" max="${SLIDER_MAX}" step="0.01" value="${SLIDER_MIN}">`;
+  L.DomEvent.disableClickPropagation(div);
+  return div;
+};
+filterControl.addTo(map);
+
+document.getElementById('filterSlider').addEventListener('input', function (e) {
+  const threshold = parseFloat(e.target.value);
+  document.getElementById('filterValue').textContent = threshold.toFixed(2);
+
+  allMarkers.forEach(function (item) {
+    if (item.value >= threshold) {
+      item.marker.setStyle({ fillOpacity: 0.85, opacity: 1 });      // 기준값 이상: 진하게
+    } else {
+      item.marker.setStyle({ fillOpacity: 0.05, opacity: 0.1 });    // 기준값 미만: 거의 투명하게
+    }
+  });
+});
+
+// ---------- 7. 레이어 켜기/끄기 ----------
+const layerToggleControl = L.control({ position: 'topleft' });
+layerToggleControl.onAdd = function () {
+  const div = L.DomUtil.create('div', 'filter-control');
+  div.innerHTML =
+    '<b>레이어 표시</b><br>' +
+    '<label><input type="checkbox" id="toggleSuitability" checked> 적합도 포인트 (P1)</label>';
+  L.DomEvent.disableClickPropagation(div);
+  return div;
+};
+layerToggleControl.addTo(map);
+
+document.getElementById('toggleSuitability').addEventListener('change', function (e) {
+  if (e.target.checked) { map.addLayer(suitabilityLayer); } else { map.removeLayer(suitabilityLayer); }
+});
+</script>
+</body>
+</html>
